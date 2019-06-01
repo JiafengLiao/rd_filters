@@ -7,6 +7,15 @@ of compounds.  As of ChEMBL 23,  the database table **structural_alerts**
 contains 8 sets of alerts.  ChEMBL doesn't apper to have much in the way of 
 documentation on the different alert sets. 
 
+##Features added to oringinal version
+Since the original version outputs 2 files after filtering:
+* **out.smi** - contains the SMILES strings and molecule names for all of the compounds
+passing the filters
+* **out.csv** - contains calculated property values and a listing alerts triggered
+by a molecule
+To visualise the result of filtering, I added an additional output file:
+* **df_with_result.csv** -Similiar to **out.csv** but added another column "FILTER_PASSED" to show the filtering status. 
+
 |Rule Set |Number of Alerts|
 |---|---:|
 |BMS|	180|
