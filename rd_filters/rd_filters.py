@@ -182,6 +182,7 @@ def main():
         rf.build_rule_list(rule_list)
         res = list(p.map(rf.evaluate, input_data))
         df = pd.DataFrame(res, columns=["SMILES", "NAME", "FILTER", "MW", "LogP", "HBD", "HBA", "TPSA"])
+        filter_passed = (df.FILTER == "OK") & df.MW.between(*rule_dict["MW"]) & df.LogP.between(*rule_dict["LogP"]) & df.HBD.between(*rule_dict["HBD"]) & df.HBA.between(*rule_dict["HBA"]) & df.TPSA.between(*rule_dict["TPSA"])
         df_ok = df[
             (df.FILTER == "OK") &
             df.MW.between(*rule_dict["MW"]) &
@@ -193,10 +194,15 @@ def main():
         output_smiles_file = prefix_name + ".smi"
         output_csv_file = prefix_name + ".csv"
         df_ok[["SMILES", "NAME"]].to_csv(f"{output_smiles_file}", sep=" ", index=False, header=False)
-        print(f"Wrote SMILES for molecules passing filters to {output_smiles_file}", file=sys.stderr)
+        print(f"Wrote SMILES for molecules passing filters to {output_smiles_file}, dataframe shape: {df_ok.shape}", file=sys.stderr)
         df.to_csv(f"{prefix_name}.csv")
-        print(f"Wrote detailed data to {output_csv_file}", file=sys.stderr)
+        print(f"Wrote detailed data to {output_csv_file}, dataframe shape: {df.shape}", file=sys.stderr)
 
+        df_with_result = pd.DataFrame(df)
+        df_with_result['FILTER_PASSED'] = ((df.FILTER == "OK") & df.MW.between(*rule_dict["MW"]) & df.LogP.between(*rule_dict["LogP"]) & df.HBD.between(*rule_dict["HBD"]) & df.HBA.between(*rule_dict["HBA"]) & df.TPSA.between(*rule_dict["TPSA"]))
+        df_with_result.to_csv("df_with_result.csv")
+        print(f"output df_with_result shape : {df_with_result.shape}")
+        
         num_input_rows = df.shape[0]
         num_output_rows = df_ok.shape[0]
         fraction_passed = "%.1f" % (num_output_rows / num_input_rows * 100.0)
