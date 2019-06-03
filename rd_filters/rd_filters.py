@@ -182,7 +182,6 @@ def main():
         rf.build_rule_list(rule_list)
         res = list(p.map(rf.evaluate, input_data))
         df = pd.DataFrame(res, columns=["SMILES", "NAME", "FILTER", "MW", "LogP", "HBD", "HBA", "TPSA"])
-        filter_passed = (df.FILTER == "OK") & df.MW.between(*rule_dict["MW"]) & df.LogP.between(*rule_dict["LogP"]) & df.HBD.between(*rule_dict["HBD"]) & df.HBA.between(*rule_dict["HBA"]) & df.TPSA.between(*rule_dict["TPSA"])
         df_ok = df[
             (df.FILTER == "OK") &
             df.MW.between(*rule_dict["MW"]) &
@@ -197,12 +196,22 @@ def main():
         print(f"Wrote SMILES for molecules passing filters to {output_smiles_file}, dataframe shape: {df_ok.shape}", file=sys.stderr)
         df.to_csv(f"{prefix_name}.csv")
         print(f"Wrote detailed data to {output_csv_file}, dataframe shape: {df.shape}", file=sys.stderr)
-
+        #***************columns added start*****************************************
         df_with_result = pd.DataFrame(df)
-        df_with_result['FILTER_PASSED'] = ((df.FILTER == "OK") & df.MW.between(*rule_dict["MW"]) & df.LogP.between(*rule_dict["LogP"]) & df.HBD.between(*rule_dict["HBD"]) & df.HBA.between(*rule_dict["HBA"]) & df.TPSA.between(*rule_dict["TPSA"]))
+
+        all_filter_passed = (df.FILTER == "OK") & df.MW.between(*rule_dict["MW"]) & df.LogP.between(*rule_dict["LogP"]) & df.HBD.between(*rule_dict["HBD"]) & df.HBA.between(*rule_dict["HBA"]) & df.TPSA.between(*rule_dict["TPSA"])
+        df_with_result['FILTER_passed']= (df.FILTER == "OK")
+        df_with_result['MW_passed']= df.MW.between(*rule_dict["MW"])
+        df_with_result['LogP_passed']=df.LogP.between(*rule_dict["LogP"])
+        df_with_result['HBD_passed'] = df.HBD.between(*rule_dict["HBD"])
+        df_with_result['HBA_passed'] = df.HBA.between(*rule_dict["HBA"])
+        df_with_result['TPSA'] = df.TPSA.between(*rule_dict["TPSA"])
+        df_with_result['ALL_FILTER_PASSED'] = all_filter_passed
+
         df_with_result.to_csv("df_with_result.csv")
         print(f"output df_with_result shape : {df_with_result.shape}")
-        
+        #********************columns added end***********************************************
+
         num_input_rows = df.shape[0]
         num_output_rows = df_ok.shape[0]
         fraction_passed = "%.1f" % (num_output_rows / num_input_rows * 100.0)
